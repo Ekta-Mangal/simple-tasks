@@ -97,6 +97,8 @@ Register payload may look like:
 }
 ```
 
+typo
+
 ### 2. Task Controller
 
 -   Add middleware for authentication to manage task operations.
