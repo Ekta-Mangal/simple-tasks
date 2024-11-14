@@ -18,10 +18,15 @@ class Task extends Model
         'user_id',
         'title',
         'description',
+        'status',
+        'priority',
+        'comments',
         'task_date',
         'completed_at',
+        'due_date',
+        'created_by',
     ];
-   
+
     /**
      * Get the attributes that should be cast.
      *
@@ -30,8 +35,19 @@ class Task extends Model
     protected function casts(): array
     {
         return [
-            'task_date' => 'date',
-            'completed_at' => 'date',
+            'task_date' => 'datetime',
+            'completed_at' => 'datetime',
+            'due_date' => 'date',
         ];
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

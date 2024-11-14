@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -49,5 +50,10 @@ class User extends Authenticatable
     public function contact(): HasOne
     {
         return $this->hasOne(UserContact::class);
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'user_id');
     }
 }
