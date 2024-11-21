@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskController_old;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ManageDataController;
 use App\Http\Controllers\UserContoller;
@@ -46,12 +46,12 @@ Route::middleware('auth')->group(function () {
     });
 
     // -----------MANAGE TASKS----------------//
-    Route::get('managetask/list', [TaskController::class, 'index'])->name('managetask.list');
-    Route::get('managetask/addTask', [TaskController::class, 'addTask'])->name('managetask.addTask');
-    Route::post('managetask/postTask', [TaskController::class, 'postTask'])->name('managetask.postTask');
-    Route::get('managetask/editTask', [TaskController::class, 'editTask'])->name('managetask.editTask');
-    Route::post('managetask/updateTask', [TaskController::class, 'updateTask'])->name('managetask.updateTask');
-    Route::get('managetask/deleteTask', [TaskController::class, 'deleteTask'])->name('managetask.deleteTask');
+    Route::get('managetask/list', [TaskController_old::class, 'index'])->name('managetask.list');
+    Route::get('managetask/addTask', [TaskController_old::class, 'addTask'])->name('managetask.addTask');
+    Route::post('managetask/postTask', [TaskController_old::class, 'postTask'])->name('managetask.postTask');
+    Route::get('managetask/editTask', [TaskController_old::class, 'editTask'])->name('managetask.editTask');
+    Route::post('managetask/updateTask', [TaskController_old::class, 'updateTask'])->name('managetask.updateTask');
+    Route::get('managetask/deleteTask', [TaskController_old::class, 'deleteTask'])->name('managetask.deleteTask');
 });
 
 require __DIR__ . '/auth.php';

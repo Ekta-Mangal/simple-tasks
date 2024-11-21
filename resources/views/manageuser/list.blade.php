@@ -141,7 +141,7 @@
     </script>
 
     <div id="addModal" class="modal fade">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h4 class="modal-title">Enter User Details Here:-</h4>
@@ -154,7 +154,7 @@
     </div>
 
     <div id="editModal" class="modal fade">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h4 class="modal-title">Modify User Details Here:-</h4>

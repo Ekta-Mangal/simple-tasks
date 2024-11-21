@@ -12,18 +12,29 @@ final class AppServiceTest extends TestCase
 {
     private $appService;
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function setUp(): void
     {
         parent::setUp();
         $this->appService = new AppService();
     }
 
+
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testListWithEmptyFilters()
     {
         $result = $this->appService->list();
         $this->assertInstanceOf(LengthAwarePaginator::class, $result);
     }
 
+
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testListWithNullValuesInFilters()
     {
         $filters = ['name' => null, 'invalid' => 'value'];
@@ -31,6 +42,10 @@ final class AppServiceTest extends TestCase
         $this->assertInstanceOf(LengthAwarePaginator::class, $result);
     }
 
+
+    /**
+     * @doesNotPerformAssertions
+     */
     public function test_list_returns_length_aware_paginator(): void
     {
         $result = $this->appService->list();

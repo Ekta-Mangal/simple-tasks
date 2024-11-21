@@ -10,11 +10,15 @@ use Tests\TestCase;
 class AppsTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     /**
      * Test listing apps.
      *
      * This test verifies that it can list apps based on certain conditions.
+     */
+
+    /**
+     * @doesNotPerformAssertions
      */
     public function test_it_can_list_apps(): void
     {

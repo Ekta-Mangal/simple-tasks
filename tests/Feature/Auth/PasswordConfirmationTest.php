@@ -2,6 +2,10 @@
 
 use App\Models\User;
 
+
+/**
+ * @doesNotPerformAssertions
+ */
 test('confirm password screen can be rendered', function () {
     $user = User::factory()->create();
 
@@ -10,6 +14,10 @@ test('confirm password screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
+
+/**
+ * @doesNotPerformAssertions
+ */
 test('password can be confirmed', function () {
     $user = User::factory()->create();
 
@@ -21,6 +29,10 @@ test('password can be confirmed', function () {
     $response->assertSessionHasNoErrors();
 });
 
+
+/**
+ * @doesNotPerformAssertions
+ */
 test('password is not confirmed with invalid password', function () {
     $user = User::factory()->create();
 

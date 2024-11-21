@@ -15,4 +15,14 @@ class ProfileController extends Controller
             return back()->with("error", "Something Went Wrong");
         }
     }
+
+    public function list(Request $request)
+    {
+        try {
+            $data = User::with('contacts')->get();
+            return view('profile.contacts', compact('data'));
+        } catch (Exception $e) {
+            return back()->with("error", "Something Went Wrong");
+        }
+    }
 }

@@ -11,7 +11,7 @@ class AuthorizationCheck
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role == 'user') {
+        if (Auth::user()->role == 'User') {
             return back()->with("error", "User Unauthorized");
         }
         return $next($request);

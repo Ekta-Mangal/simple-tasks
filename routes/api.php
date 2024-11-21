@@ -6,14 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-/**
- * Default Route - /
- */
+// Default route
 Route::get('/', function () {
     return response()->json([
         'version' => '1.0.0',
@@ -21,11 +14,13 @@ Route::get('/', function () {
     ], Response::HTTP_OK);
 });
 
+Route::prefix('users')->controller(UserContoller::class)->group(function () {
+    Route::post('/register', 'register');
+    Route::post('/login', 'login');
+});
 
-// For users
-Route::post('/register', [UserContoller::class, 'login']);
-Route::post('/login', [UserContoller::class, 'login']);
-Route::post('/logout', [UserContoller::class, 'logout']);
-
-// For tasks
-Route::apiResource('tasks', TaskController::class);
+// Protected routes of task and logout
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/users/logout', [UserContoller::class, 'logout']);
+    Route::apiResource('tasks', TaskController::class);
+});

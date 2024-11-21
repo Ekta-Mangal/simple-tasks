@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -34,9 +31,11 @@ return new class extends Migration
             $table->string('country_id', 100)->nullable();
             $table->timestamps();
 
+            // Ensure cascading delete works
             $table->foreign('user_id')
                 ->references('id')->on('users')
-                ->onDelete('cascade');
+                ->onDelete('cascade');  // Cascade delete when user is deleted
+
             $table->foreign('country_id')
                 ->references('id')->on('countries')
                 ->onDelete('cascade');
@@ -58,14 +57,11 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('user_contacts');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('user_contacts');
+        Schema::dropIfExists('users');
     }
 };

@@ -7,140 +7,147 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TaskRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Task;
-use App\Models\User;
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
+    // List all tasks (GET /api/tasks)
     public function index(Request $request)
     {
         try {
-            $userId = Auth::user()->id;
-            $user = Auth::user()->role;
+            $tasks = Task::with(['user.contact.country'])
+                ->latest()
+                ->get();
 
-
-            if ($user == 'Admin') {
-                $query = Task::with(['user', 'creator'])
-                    ->orderBy('created_at', 'desc');
-            } else {
-                $query = Task::where('user_id', $userId)
-                    ->with(['user', 'creator'])
-                    ->orderBy('created_at', 'desc');
-            }
-
-            $results = $query->get()->map(function ($item) {
-                $status = $item->status;
-                if ($status == 'todo') {
-                    $status = 'To Do';
-                } elseif ($status == 'inprogress') {
-                    $status = 'In Progress';
-                } elseif ($status == 'done') {
-                    $status = 'Completed';
-                } elseif ($status == 'due') {
-                    $status = 'Over Due';
-                }
-
-                $createdByName = $item->creator ? $item->creator->name : 'N/A'; // If creator not found, return 'N/A'
+            $formattedTasks = $tasks->map(function ($task) {
                 return [
-                    'id' => $item->id,
-                    'user_id' => $item->user_id,
-                    'title' => $item->title,
-                    'description' => $item->description,
-                    'status' => $status,
-                    'priority' => $item->priority,
-                    'created_by' => $createdByName,
-                    'task_date' => $item->task_date,
-                    'completed_at' => $item->completed_at ? Carbon::parse($item->completed_at)->format('Y-m-d H:i:s') : null,
-                    'due_date' => $item->due_date ? Carbon::parse($item->due_date)->format('Y-m-d') : null,
-                    'created_at' => $item->created_at ? Carbon::parse($item->created_at)->format('Y-m-d H:i:s') : null,
-                    'updated_at' => $item->updated_at ? Carbon::parse($item->updated_at)->format('Y-m-d H:i:s') : null,
-                    'user_name' => $item->user->name,
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'user' => [
+                        'name' => $task->user->name ?? 'Unknown',
+                        'email' => $task->user->email ?? 'N/A',
+                        'country' => [
+                            'name' => $task->user->contact->country->name ?? 'N/A',
+                            'code' => $task->user->contact->country->code ?? 'N/A',
+                        ],
+                    ],
+                    'description' => $task->description ?? 'No description provided',
+                    'status' => $task->status ?? 'todo',
+                    'priority' => $task->priority ?? 'Medium',
+                    'task_date' => $task->task_date ? Carbon::parse($task->task_date)->toIso8601String() : null,
+                    'completed_at' => $task->completed_at ? Carbon::parse($task->completed_at)->toIso8601String() : null,
+                    'created_at' => Carbon::parse($task->created_at)->toIso8601String(),
+                    'due_date' => $task->due_date ? Carbon::parse($task->due_date)->toIso8601String() : null,
                 ];
-            })->toArray();
-            return view('managetask.view', compact('results'));
-        } catch (Exception $e) {
-            return back()->with("error", "Something Went Wrong");
-        }
-    }
+            });
 
-    public function addTask()
-    {
-        try {
-            if (Auth::check() && Auth::user()->role == 'Admin') {
-                $users = User::select('id', 'name')->distinct()->get();
-            } else {
-                $users = User::select('id', 'name')->where('id', Auth::id())->get();
+            if ($formattedTasks->isEmpty()) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'No tasks found!',
+                ], 200);
             }
-            $html = view('managetask.add', compact('users'))->render();
-            return response()->json(['html' => $html, 'success' => true]);
-        } catch (\Exception $e) {
-            return back()->with("error", "Something Went Wrong");
+
+            return response()->json(['data' => $formattedTasks], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
     }
 
-    public function postTask(TaskRequest $request)
+    public function store(TaskRequest $request)
     {
         try {
             $task = new Task();
             $task->title = $request->title;
             $task->description = $request->description;
-            $task->priority = $request->priority;
+            $task->priority = $request->priority ?? 'Medium';
+            $task->status = $request->status ?? 'todo';
             $task->user_id = $request->user_id;
-            $task->due_date = $request->due_date;
+            $task->due_date = $request->due_date ? Carbon::parse($request->due_date)->toDateString() : null;
             $task->created_by = Auth::id();
             $task->save();
-            return back()->with('success', 'Task Created Successfully');
-        } catch (\Exception $e) {
-            // dd($e->getMessage());
-            return back()->with("error", "Something Went Wrong");
+
+            $taskWithRelations = Task::with(['user.contact.country'])->find($task->id);
+
+            return response()->json([
+                'success' => 'Task Created Successfully',
+                'task' => [
+                    'id' => $taskWithRelations->id,
+                    'title' => $taskWithRelations->title,
+                    'description' => $taskWithRelations->description,
+                    'status' => $taskWithRelations->status,
+                    'priority' => $taskWithRelations->priority,
+                    'task_date' => $taskWithRelations->task_date ? Carbon::parse($taskWithRelations->task_date)->toIso8601String() : null,
+                    'due_date' => $taskWithRelations->due_date ? Carbon::parse($taskWithRelations->due_date)->toIso8601String() : null,
+                    'user' => [
+                        'name' => $taskWithRelations->user->name ?? 'Unknown',
+                        'email' => $taskWithRelations->user->email ?? 'N/A',
+                        'country' => [
+                            'name' => $taskWithRelations->user->contact->country->name ?? 'N/A',
+                            'code' => $taskWithRelations->user->contact->country->code ?? 'N/A',
+                        ],
+                    ],
+                    'created_at' => Carbon::parse($taskWithRelations->created_at)->toIso8601String(),
+                ],
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
     }
 
-    public function editTask(Request $request)
+    // Update task (PUT /api/tasks/{id})
+    public function update(TaskRequest $request, $id)
     {
         try {
-            $id = $request->id;
-            $data = Task::find($id);
-            if (Auth::check() && Auth::user()->role == 'Admin') {
-                $users = User::select('id', 'name')->distinct()->get();
-            } else {
-                $users = User::select('id', 'name')->where('id', Auth::id())->get();
-            }
-            $html = view('managetask.editTask', compact('data', 'users'))->render();
-            return response()->json(['html' => $html, 'success' => true]);
-        } catch (\Exception $e) {
-            return back()->with("error", "Something Went Wrong");
-        }
-    }
+            $task = Task::findOrFail($id);
 
-    public function updateTask(TaskRequest $request)
-    {
-        try {
-            $task = Task::find($request->id_edit);
             $task->title = $request->title;
-            $task->due_date = $request->due_date;
             $task->description = $request->description;
-            $task->user_id = $request->user_id;
             $task->priority = $request->priority;
-            $task->update();
-            return back()->with('success', 'Task Updated Successfully');
-        } catch (\Exception $e) {
-            return back()->with("error", "Something Went Wrong");
+            $task->user_id = $request->user_id;
+            $task->due_date = $request->due_date;
+            $task->save();
+
+            $user = $task->user()->with('contact.country')->first();
+
+            $updatedTask = [
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'priority' => $task->priority,
+                'status' => $task->status ?? 'todo',
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'country' => [
+                        'name' => $user->contact->country->name ?? 'N/A',
+                    ],
+                ],
+                'due_date' => $task->due_date ? Carbon::parse($task->due_date)->toIso8601String() : null,
+                'updated_at' => Carbon::parse($task->updated_at)->toIso8601String(),
+            ];
+
+            return response()->json(['success' => 'Task Updated Successfully', 'task' => $updatedTask], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Something went wrong', 'message' => $e->getMessage()], 500);
         }
     }
 
-    public function deleteTask(Request $request)
+    // Delete task (DELETE /api/tasks/{id})
+    public function destroy($id)
     {
         try {
-            $delete = Task::where('id', $request->id)->delete();
-            if ($delete) {
-                return response()->json(['message' => 'Task Deleted Succesfully', 'status' => 'success']);
-            }
-            return response()->json(['message' => 'Task Deleted Failed', 'status' => 'error']);
-        } catch (\Exception $e) {
-            return back()->with("error", "Something Went Wrong");
+            $task = Task::findOrFail($id);
+            $task->delete();
+
+            return response()->json(['success' => 'Task Deleted Successfully'], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Task Not Found'], 404);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
     }
 }

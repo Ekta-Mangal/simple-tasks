@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('status')->default('todo');
-            $table->string('priority');
+            $table->string('priority')->default('Medium');
             $table->string('comments')->nullable();
             $table->datetime('task_date')->nullable();
             $table->datetime('completed_at')->nullable();
