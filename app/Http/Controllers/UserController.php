@@ -7,15 +7,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\Country;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use App\Models\UserContact;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Exception;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
-class UserContoller extends Controller
+class UserController extends Controller
 {
     public function list(Request $request)
     {
@@ -33,7 +33,7 @@ class UserContoller extends Controller
             $countries = Country::select('id', 'name')->get();
             $html = view('manageuser.add', compact('countries'))->render();
             return response()->json(['html' => $html, 'success' => true]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return back()->with("error", "Something Went Wrong");
         }
     }
@@ -86,6 +86,7 @@ class UserContoller extends Controller
             $user->name = $request->name;
             $user->email = $request->email;
             $user->role = $request->role;
+
             if ($request->filled('password')) {
                 $user->password = Hash::make($request->password);
             }
@@ -103,7 +104,6 @@ class UserContoller extends Controller
 
             return back()->with('success', 'User Details Updated Successfully');
         } catch (\Exception $e) {
-            // Return error if something goes wrong
             return back()->with("error", "Something Went Wrong");
         }
     }
@@ -123,8 +123,6 @@ class UserContoller extends Controller
             return response()->json(['message' => 'Something Went Wrong', 'status' => 'error']);
         }
     }
-
-
 
     public function register(Request $request)
     {

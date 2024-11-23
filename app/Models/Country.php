@@ -11,4 +11,6 @@ class Country extends Model
     use HasFactory, Notifiable;
 
     protected $table = 'countries';
+
+    protected $fillable = ['name', 'code', 'iso_code', 'isd_code'];
 }

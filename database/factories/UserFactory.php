@@ -5,8 +5,8 @@ namespace Database\Factories;
 use App\Models\User;
 use App\Models\UserContact;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 class UserFactory extends Factory
 {
     protected $model = User::class;
+
     /**
      * The current password being used by the factory.
      */
@@ -21,14 +22,13 @@ class UserFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            // 'name' => $this->faker->name(),
+            'name' => $this->faker->name,
+            'email' => $this->faker->unique()->safeEmail(),
             'role' => $this->faker->randomElement(['User', 'Admin']),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -46,6 +46,9 @@ class UserFactory extends Factory
         ]);
     }
 
+    /**
+     * Configure the factory to create related UserContact data.
+     */
     public function configure(): static
     {
         return $this->afterCreating(function (User $user) {
@@ -57,7 +60,7 @@ class UserFactory extends Factory
                 'address2' => $this->faker->secondaryAddress(),
                 'address3' => $this->faker->city(),
                 'postcode' => $this->faker->postcode(),
-                'country_id' => $this->faker->randomElement(['1', '2', '3']),
+                'country_id' => $this->faker->randomElement([1, 2, 3]),
             ]);
         });
     }

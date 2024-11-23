@@ -22,7 +22,8 @@ return new class extends Migration
             $table->datetime('task_date')->nullable();
             $table->datetime('completed_at')->nullable();
             $table->date('due_date')->nullable();
-            $table->string('created_by')->references('id')->on('users');
+            $table->unsignedBigInteger('created_by'); // Change this to unsignedBigInteger
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade'); // Add foreign key constraint
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->timestamps();

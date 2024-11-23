@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\TaskController;
-use App\Http\Controllers\UserContoller;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
@@ -14,13 +14,13 @@ Route::get('/', function () {
     ], Response::HTTP_OK);
 });
 
-Route::prefix('users')->controller(UserContoller::class)->group(function () {
+Route::prefix('users')->controller(UserController::class)->group(function () {
     Route::post('/register', 'register');
     Route::post('/login', 'login');
 });
 
 // Protected routes of task and logout
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/users/logout', [UserContoller::class, 'logout']);
+    Route::post('/users/logout', [UserController::class, 'logout']);
     Route::apiResource('tasks', TaskController::class);
 });

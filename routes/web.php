@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController_old;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ManageDataController;
-use App\Http\Controllers\UserContoller;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -37,12 +37,13 @@ Route::middleware('auth')->group(function () {
 
     // -----------MANAGE USER----------------//
     Route::middleware('CheckAdmin')->group(function () {
-        Route::get('manageuser/list', [UserContoller::class, 'list'])->name('manageuser.list');
-        Route::get('manageuser/add', [UserContoller::class, 'add'])->name('manageuser.add');
-        Route::post('manageuser/postadd', [UserContoller::class, 'postadd'])->name('manageuser.postadd');
-        Route::get('manageuser/edit', [UserContoller::class, 'editUser'])->name('manageuser.edit');
-        Route::post('manageuser/update', [UserContoller::class, 'update'])->name('manageuser.update');
-        Route::get('manageuser/delete', [UserContoller::class, 'delete'])->name('manageuser.delete');
+        Route::get('manageuser/list', [UserController::class, 'list'])->name('manageuser.list');
+        Route::get('manageuser/add', [UserController::class, 'add'])->name('manageuser.add');
+        Route::post('manageuser/postadd', [UserController::class, 'postadd'])->name('manageuser.postadd');
+        Route::get('manageuser/edit', [UserController::class, 'editUser'])->name('manageuser.edit');
+        Route::post('manageuser/update', [UserController::class, 'update'])->name('manageuser.update');
+        Route::get('manageuser/delete', [UserController::class, 'delete'])->name('manageuser.delete');
+        // Route::delete('manageuser/delete/{id}', [UserController::class, 'delete'])->name('manageuser.delete');
     });
 
     // -----------MANAGE TASKS----------------//

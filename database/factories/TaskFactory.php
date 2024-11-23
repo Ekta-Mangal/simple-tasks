@@ -18,12 +18,14 @@ class TaskFactory extends Factory
      */
     public function definition(): array
     {
+        $admin = User::where('role', 'Admin')->first() ?? User::factory()->create(['role' => 'Admin']);
+
         return [
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
-            'user_id' => User::inRandomOrder()->value('id'),
+            'user_id' => User::factory(),
             'priority' => Arr::random(['High', 'Medium', 'Low']),
-            'created_by' => User::where('role', 'Admin')->inRandomOrder()->value('id'),
+            'created_by' => $admin->id,
         ];
     }
 }
