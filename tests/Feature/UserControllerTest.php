@@ -182,7 +182,7 @@ class UserControllerTest extends TestCase
             'country' => $user->contact->country_id,
         ];
 
-        // Use POST instead of PUT
+
         $response = $this->post(route('manageuser.update'), $requestData);
 
         $response->assertRedirect(); // Ensure redirect occurs

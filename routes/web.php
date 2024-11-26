@@ -24,7 +24,6 @@ Route::middleware('auth')->group(function () {
 
     // -----------DASHBOARD----------------//
     Route::get('/dashboard', [HomeController::class, 'show'])->name('dashboard');
-    Route::get('/graph', [HomeController::class, 'graph'])->name('graph');
 
     // -----------DATA DISPLAY----------------//
     Route::get('gettabledata', [ManageDataController::class, 'gettabledata'])->name('gettabledata');
@@ -33,6 +32,7 @@ Route::middleware('auth')->group(function () {
 
     // -----------USER PROFILE---------------//
     Route::get('/profile', [ProfileController::class, 'view'])->name('profile');
+    Route::post('/changePassword', [ProfileController::class, 'changePassword'])->name('changePassword');
     Route::get('/profile/list', [ProfileController::class, 'list'])->name('profile.list');
 
     // -----------MANAGE USER----------------//

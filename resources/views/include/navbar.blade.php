@@ -49,13 +49,6 @@
                                     <p>Dashboard</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('graph') }}"
-                                    class="nav-link {{ request()->routeIs('graph') ? 'active' : '' }}">
-                                    <i class="nav-icon fas fa-chart-bar"></i>
-                                    <p>Time Entry Graph</p>
-                                </a>
-                            </li>
                             @if (Auth::user()->role != 'User')
                                 <li class="nav-item">
                                     <a href="{{ route('manageuser.list') }}"
