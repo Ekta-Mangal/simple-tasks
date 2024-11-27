@@ -56,11 +56,12 @@ class TaskController_old extends Controller
                     'due_date' => $item->due_date ? Carbon::parse($item->due_date)->format('Y-m-d') : null,
                     'created_at' => $item->created_at ? Carbon::parse($item->created_at)->format('Y-m-d H:i:s') : null,
                     'updated_at' => $item->updated_at ? Carbon::parse($item->updated_at)->format('Y-m-d H:i:s') : null,
-                    'user_name' => $item->user->name,
+                    'user_name' => $item->user ? $item->user->name : 'N/A',
                 ];
             })->toArray();
             return view('managetask.view', compact('results'));
         } catch (Exception $e) {
+            dd($e->getMessage());
             return back()->with("error", "Something Went Wrong");
         }
     }

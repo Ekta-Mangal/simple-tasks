@@ -12,11 +12,9 @@ class HomeController extends Controller
     public function show(Request $request)
     {
         try {
-
             Task::where('status', '!=', 'done')
                 ->where('due_date', '<', now())
                 ->update(['status' => 'due']);
-
 
             $user = Auth::user()->role;
             $SelectedCategory = $request->input('category', null);
