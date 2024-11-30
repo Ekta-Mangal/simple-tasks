@@ -14,21 +14,41 @@ class TaskControllerTest extends TestCase
     /** @test */
     public function it_can_list_all_tasks()
     {
+        //create admin and users
         $admin = User::factory()->create(['role' => 'Admin']);
         $user = User::factory()->create();
+
+        //create task for task list
         $task = Task::factory()->create(['user_id' => $user->id, 'created_by' => $admin->id]);
 
+        //login user
+        $response = $this->post('login', [
+            'email' => $user->email,
+            'password' => 'password'
+        ]);
+        $this->assertAuthenticated();
+
+        //get list of task based on user
         $response = $this->actingAs($user)->get('/api/tasks');
 
         $response->assertStatus(200)
             ->assertJsonFragment(['id' => $task->id]);
     }
 
-
     /** @test */
     public function it_can_create_a_task()
     {
+        //create a user
         $user = User::factory()->create();
+
+        //login user
+        $response = $this->post('login', [
+            'email' => $user->email,
+            'password' => 'password'
+        ]);
+        $this->assertAuthenticated();
+
+        //create a post
         $data = [
             'title' => 'Test Task',
             'description' => 'Test task description',
@@ -47,8 +67,20 @@ class TaskControllerTest extends TestCase
     /** @test */
     public function it_can_update_a_task()
     {
+        //create a user
         $user = User::factory()->create();
+
+        //create task with assigned to
         $task = Task::factory()->create(['user_id' => $user->id]);
+
+        //login user
+        $response = $this->post('login', [
+            'email' => $user->email,
+            'password' => 'password'
+        ]);
+        $this->assertAuthenticated();
+
+        //update task details for specific task
         $data = [
             'title' => 'Updated Task Title',
             'description' => 'Updated task description',
@@ -67,12 +99,23 @@ class TaskControllerTest extends TestCase
     /** @test */
     public function it_can_delete_a_task()
     {
+        //create a user
         $user = User::factory()->create();
+
+        //create a task with details
         $task = Task::factory()->create([
             'user_id' => $user->id,
-            'created_by' => $user->id, // Explicitly set created_by
+            'created_by' => $user->id,
         ]);
 
+        //login user
+        $response = $this->post('login', [
+            'email' => $user->email,
+            'password' => 'password'
+        ]);
+        $this->assertAuthenticated();
+
+        //delete task
         $response = $this->actingAs($user)->delete("/api/tasks/{$task->id}");
 
         $response->assertStatus(200)

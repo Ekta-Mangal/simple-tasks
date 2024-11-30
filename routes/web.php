@@ -42,7 +42,7 @@ Route::middleware('auth')->group(function () {
         Route::post('manageuser/postadd', [UserController::class, 'postadd'])->name('manageuser.postadd');
         Route::get('manageuser/edit', [UserController::class, 'editUser'])->name('manageuser.edit');
         Route::post('manageuser/update', [UserController::class, 'update'])->name('manageuser.update');
-        Route::get('manageuser/delete', [UserController::class, 'delete'])->name('manageuser.delete');
+        Route::get('manageuser/delete', [UserController::class, 'destroy'])->name('manageuser.delete');
         // Route::delete('manageuser/delete/{id}', [UserController::class, 'delete'])->name('manageuser.delete');
     });
 

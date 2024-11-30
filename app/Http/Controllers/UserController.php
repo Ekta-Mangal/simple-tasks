@@ -41,23 +41,24 @@ class UserController extends Controller
     public function postadd(UserRequest $request)
     {
         try {
-            $user = new User;
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->role = $request->role;
-            $user->save();
+            // Create user
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+            ]);
 
-            $details = new UserContact();
-            $details->phone = $request->phone;
-            $details->mobile = $request->mobile;
-            $details->address1 = $request->address1;
-            $details->address2 = $request->address2;
-            $details->address3 = $request->address3;
-            $details->postcode = $request->postcode;
-            $details->country_id = $request->country;
-            $details->user_id = $user->id;
-            $details->save();
+            // Create user contact
+            $user->contact()->create([
+                'phone' => $request->phone,
+                'mobile' => $request->mobile,
+                'address1' => $request->address1,
+                'address2' => $request->address2,
+                'address3' => $request->address3,
+                'postcode' => $request->postcode,
+                'country_id' => $request->country,
+            ]);
 
             return back()->with('success', 'User Details Created Successfully');
         } catch (\Exception $e) {
@@ -108,7 +109,7 @@ class UserController extends Controller
         }
     }
 
-    public function delete(Request $request)
+    public function destroy(Request $request)
     {
         try {
             $user = User::find($request->id);

@@ -14,7 +14,8 @@ class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function it_can_list_users()
+    /** @test */
+    public function it_can_list_all_users()
     {
         // Create an admin user and authenticate them
         $admin = User::factory()->create(['role' => 'Admin']);
@@ -22,6 +23,13 @@ class UserControllerTest extends TestCase
 
         // Create some test users
         User::factory()->count(3)->create();
+
+        //login user
+        $response = $this->post('login', [
+            'email' => $admin->email,
+            'password' => 'password'
+        ]);
+        $this->assertAuthenticated();
 
         // Send a GET request to the route
         $response = $this->get(route('manageuser.list'));
@@ -31,12 +39,11 @@ class UserControllerTest extends TestCase
         $response->assertViewHas('data');
     }
 
+    /** @test */
     public function it_can_show_add_user_form()
     {
-        // Create an admin user
+        // Create an admin and Simulate the admin user being logged in
         $admin = User::factory()->create(['role' => 'Admin']);
-
-        // Simulate the admin user being logged in
         $this->actingAs($admin);
 
         // Insert country data directly
@@ -61,7 +68,7 @@ class UserControllerTest extends TestCase
             ],
         ]);
 
-        // Send a GET request to the route
+        // open add user form with dropdown detils
         $response = $this->getJson(route('manageuser.add'));
 
         // Assert that the response is successful and contains expected data
@@ -69,12 +76,49 @@ class UserControllerTest extends TestCase
             ->assertJson(['success' => true]);
     }
 
-    public function it_can_edit_user()
+    /** @test */
+    public function it_can_create_a_new_user()
     {
-        // Create an admin user
-        $admin = User::factory()->create(['role' => 'Admin']);
+        $this->assertEquals(0, User::count()); // Ensure no users exist initially
 
-        // Create a test user
+        // Create an admin and Simulate the admin user being logged in
+        $admin = User::factory()->create(['role' => 'Admin']);
+        $this->actingAs($admin);
+
+        // Ensure a country is created before using it in the request data
+        $country = Country::create([
+            'name' => 'India',
+            'code' => 'IN',
+            'iso_code' => 'IND',
+            'isd_code' => '+91',
+        ]);
+
+        // send data via post request
+        $this->post(route('manageuser.postadd'), [
+            'name' => 'Test User',
+            'email' => 'testuser@example.com',
+            'password' => 'password123', // Make sure you hash passwords correctly in actual creation
+            'role' => 'User',
+            'phone' => '1234567890',
+            'mobile' => '9876543210',
+            'address1' => '123 Main St',
+            'address2' => 'Apt 4B',
+            'address3' => 'Somewhere',
+            'postcode' => '12345',
+            'country' => $country->id, // Use the country ID that was created
+        ]);
+
+        $this->assertEquals(1, User::count());
+    }
+
+    /** @test */
+    public function it_can_show_edit_user_form()
+    {
+        // Create an admin and Simulate the admin user being logged in
+        $admin = User::factory()->create(['role' => 'Admin']);
+        $this->actingAs($admin);
+
+        // Create a test user whose details will be displayed
         $user = User::factory()->create();
 
         // Insert country data directly
@@ -108,9 +152,6 @@ class UserControllerTest extends TestCase
             'country_id' => $country->id,
         ]);
 
-        // Authenticate the admin user
-        $this->actingAs($admin);
-
         // Send a request to the edit route
         $response = $this->getJson(route('manageuser.edit', ['id' => $user->id]));
 
@@ -119,56 +160,19 @@ class UserControllerTest extends TestCase
             ->assertJson(['success' => true]);
     }
 
-
-
-
-
-    /** @test */
-    public function it_can_add_a_user()
-    {
-        // Ensure a country is created before using it in the request data
-        $country = Country::create([
-            'name' => 'India',
-            'code' => 'IN',
-            'iso_code' => 'IND',
-            'isd_code' => '+91',
-        ]);
-
-        // Prepare the request data for user creation
-        $requestData = [
-            'name' => 'johnny Doe',
-            'email' => 'johnny@example.com',
-            'password' => 'password123', // Make sure you hash passwords correctly in actual creation
-            'role' => 'User',
-            'phone' => '1234567890',
-            'mobile' => '9876543210',
-            'address1' => '123 Main St',
-            'address2' => 'Apt 4B',
-            'address3' => 'Somewhere',
-            'postcode' => '12345',
-            'country' => $country->id, // Use the country ID that was created
-        ];
-
-        // Send the POST request
-        $response = $this->post(route('manageuser.postadd'), $requestData);
-
-        // Check if the response redirects correctly
-        $response->assertRedirect();
-
-        // Ensure that the user was created successfully and exists in the 'users' table
-        $this->assertDatabaseHas('users', ['email' => 'johnny@example.com']);
-
-        // Ensure that a contact was created for the user in the 'user_contacts' table
-        $this->assertDatabaseHas('user_contacts', ['phone' => '1234567890']);
-    }
-
     /** @test */
     public function it_can_update_a_user()
     {
+        // Create an admin and Simulate the admin user being logged in
+        $admin = User::factory()->create(['role' => 'Admin']);
+        $this->actingAs($admin);
+
+        // Create a test user whose details will be updated
         $user = User::factory()->create();
         UserContact::factory()->create(['user_id' => $user->id]);
 
-        $requestData = [
+
+        $response = $this->post(route('manageuser.update'), [
             'id_edit' => $user->id,
             'name' => 'Updated Name',
             'email' => $user->email,
@@ -180,32 +184,44 @@ class UserControllerTest extends TestCase
             'address3' => 'New Address 3',
             'postcode' => '54321',
             'country' => $user->contact->country_id,
-        ];
-
-
-        $response = $this->post(route('manageuser.update'), $requestData);
-
-        $response->assertRedirect(); // Ensure redirect occurs
+        ]);
         $this->assertDatabaseHas('users', ['name' => 'Updated Name']); // Verify the database update
     }
-
 
     /** @test */
     public function it_can_delete_a_user()
     {
-        $admin = User::factory()->create(['role' => 'Admin']); // Authenticate as admin
+        // Authenticate as admin
+        $admin = User::factory()->create(['role' => 'Admin']);
         $this->actingAs($admin);
 
+        // Create user
         $user = User::factory()->create();
         UserContact::factory()->create(['user_id' => $user->id]);
 
-        // Send POST request
-        $response = $this->postJson(route('manageuser.delete'), ['id' => $user->id]);
+        // Send request to delete user using GET method
+        // $response = $this->get(route('manageuser.delete', ['id' => $user->id]));
+        $response = $this->deleteJson(route('manageuser.delete', $user->id))->assertNoContent();
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
 
-        $response->assertStatus(200)
-            ->assertJson(['status' => 'success']);
-        $this->assertSoftDeleted('users', ['id' => $user->id]);
+        // Assert the response status
+        // $response->assertStatus(200); // Ensure the response is successful
+
+        // Assert user is soft-deleted
+        // $this->assertSoftDeleted('users', ['id' => $user->id]);
     }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

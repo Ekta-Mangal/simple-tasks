@@ -26,12 +26,13 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            // 'name' => $this->faker->name(),
             'name' => $this->faker->name,
+            // 'name' => 'Factory User', // Use a static name for predictability in tests
             'email' => $this->faker->unique()->safeEmail(),
             'role' => $this->faker->randomElement(['User', 'Admin']),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            // 'password' => Hash::make('password'), // Match test input
             'remember_token' => Str::random(10),
         ];
     }
